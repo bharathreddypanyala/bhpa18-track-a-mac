@@ -1,0 +1,46 @@
+Author: bharathreddypanyala <bharathintern@gmail.com>
+Date:   Sun May 31 00:37:49 2020 +0200
+
+    search file to search mac address giving an input
+
+commit 684bd10811401ea7f81c1484c3fdb46a9c8986d7
+Author: bharathreddypanyala <bharathintern@gmail.com>
+Date:   Sun May 31 00:35:26 2020 +0200
+
+    a python code to probe device
+
+commit 36d4c0f22fb472d6e2fc4233daa0976cf1e084c8
+Author: bharathreddypanyala <bharathintern@gmail.com>
+Date:   Sun May 31 00:33:50 2020 +0200
+
+    added list file to show the mac addresses
+
+commit e132b675b4535df29aef2445e548d4ed3c295e39
+Author: bharathreddypanyala <bharathintern@gmail.com>
+Date:   Sun May 31 00:30:55 2020 +0200
+
+    added listDevs file to show the details of device
+
+commit 80291294f470bbe7998ee3db3da2c0d637e1524f
+Author: bharathreddypanyala <bharathintern@gmail.com>
+Date:   Sat May 30 23:58:35 2020 +0200
+
+    create a database with config file
+
+commit c9f690644b179f8997c8f65f4e61291519dd7711
+Author: bharathreddypanyala <bharathintern@gmail.com>
+Date:   Sat May 30 23:57:19 2020 +0200
+
+    file to remove device from database
+
+commit 47f925281cbc7ee84fdcdea2e378c8e7427710ed
+Author: bharathreddypanyala <bharathintern@gmail.com>
+Date:   Sat May 30 23:55:21 2020 +0200
+
+    add device file to add the device and store in database
+
+commit b0b2b1743841bcc9842eeae832584a5eeb2fe3dd
+Author: bharathreddypanyala <55359052+bharathreddypanyala@users.noreply.github.com>
+Date:   Sat May 30 23:54:05 2020 +0200
+
+    Create addDevice.php
