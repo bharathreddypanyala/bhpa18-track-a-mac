@@ -1,4 +1,16 @@
 Author: bharathreddypanyala <bharathintern@gmail.com>
+Date:   Sun May 31 14:29:11 2020 +0200
+
+    resolved errors
+
+commit 18f91cd23ecee7287bb5e1d2ce23a44b3fb73d2f
+Author: bharathreddypanyala <bharathintern@gmail.com>
+Date:   Sun May 31 00:39:49 2020 +0200
+
+    git log
+
+commit 4f45db747ebbc85bc951ff6d08595281b0bdec52
+Author: bharathreddypanyala <bharathintern@gmail.com>
 Date:   Sun May 31 00:37:49 2020 +0200
 
     search file to search mac address giving an input
