@@ -1,5 +1,5 @@
 <?php
-include_once('config.php.txt');
+include_once('config.php');
 
 $result = $db->query('SELECT * FROM info');
 
