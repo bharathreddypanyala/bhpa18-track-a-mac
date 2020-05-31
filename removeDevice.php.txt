@@ -1,5 +1,5 @@
 <?php
-include('config.php');
+include('config.php.txt');
 
 if (empty($_GET)){
 	echo "none";
