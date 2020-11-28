@@ -8,14 +8,35 @@ from easysnmp import Session
 
 def main():
     while True:
+        connect_to_database = None
         try:
             connect_to_database = sqlite3.connect('track-a-mac.db') # create or open track-a-mac database
             print("connected to database!")
+            
+            connect_to_database.close()     
         except sqlite3.Error as error:
             print(error)
-        
             
-            
-
+        finally:
+            if connect_to_database:
+                switches = connect_to_database.execute("select * from networkdevices")
+                for switch in switches:
+                    ip = switch[0]; port= switch[1]; community = switch[2]; version = int(switch[3])
+                    oids = {'dot1dTpFdbEntryAddress':'1.3.6.1.2.1.17.4.3.1.1',
+							'dot1dTpFdbEntryPort':'1.3.6.1.2.1.17.4.3.1.2',
+							'dot1qTpFdbEntryStatus':'1.3.6.1.2.1.17.4.3.1.3',
+							'dot1qTpFdbAddress':'1.3.6.1.2.17.7.1.2.2.1.1',
+							'dot1qTpFdbPort':'1.3.6.1.2.1.17.7.1.2.2.1.2',
+							'dot1qTpFdbStatus':'1.3.6.1.2.1.17.7.1.2.2.1.3',
+							'dot1qVlanStaticName':'1.3.6.1.2.1.17.7.1.4.3.1.1',
+							'sysDescr':'1.1.3.6.1.2.1.1.1',
+							'dot1dBasePortIfIndex':'1.3.6.1.2.1.17.1.4.1.2',
+							'dot1qVlanStaticUntaggedPorts':'1.3.6.1.2.1.17.7.1.4.3.1.4'
+       						}
+                    try:
+                        
+									
+                    
+       
 if __name__ == '__main__':
     main()
