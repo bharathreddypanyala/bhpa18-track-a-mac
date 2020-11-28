@@ -43,17 +43,21 @@ def main():
                         connect_to_database.commit()
                     request_time = str(datetime.fromtimestamp(int(time.time())))
                     try:
-                        systems = session.walk(oids['dot1dTpFdbEntryAddress'])
+                        computers = session.walk(oids['dot1dTpFdbEntryAddress'])
                         ports = session.walk(oids['dot1dTpFdbEntryPort'])
-                        for s, p in zip(systems, ports):
+                        for s, p in zip(computers, ports):
                             oid = s.oid; oid_index = s.oid_index; type_of_snmp = s.snmp_type
-                            system = ':'.join('{:02x}'.format(ord(a)) for a in s.value)
+                            computer = ':'.join('{:02x}'.format(ord(a)) for a in s.value)
                             port = p.value
                             results = connect_to_database.execute("select * from results where port=? and ip=?", port, ip)
                             fetch_results = results.fetchall()
-                            for connected_systems in fetch_results:
-                                s = connected_systems[3]
-                            if fetch_results
+                            for connected_computers in fetch_results:
+                                s = connected_computers[3]
+                            if len(fetch_results) == 0:
+                                print(ip, port, computer)
+                                connect_to_database.execute("insert into results(ip=?, port=?, macs=?", ip, port, computer)
+                                connect_to_database.commit()
+                                
                             
                     except:
                         
