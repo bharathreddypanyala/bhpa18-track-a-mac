@@ -45,22 +45,37 @@ def main():
                     try:
                         computers = session.walk(oids['dot1dTpFdbEntryAddress'])
                         ports = session.walk(oids['dot1dTpFdbEntryPort'])
-                        for s, p in zip(computers, ports):
-                            oid = s.oid; oid_index = s.oid_index; type_of_snmp = s.snmp_type
-                            computer = ':'.join('{:02x}'.format(ord(a)) for a in s.value)
+                        for c, p in zip(computers, ports):
+                            oid = c.oid; oid_index = c.oid_index; type_of_snmp = c.snmp_type
+                            computer = ':'.join('{:02x}'.format(ord(a)) for a in c.value)
                             port = p.value
                             results = connect_to_database.execute("select * from results where port=? and ip=?", port, ip)
                             fetch_results = results.fetchall()
                             for connected_computers in fetch_results:
-                                s = connected_computers[3]
+                                c = connected_computers[3]
                             if len(fetch_results) == 0:
                                 print(ip, port, computer)
                                 connect_to_database.execute("insert into results(ip=?, port=?, macs=?", ip, port, computer)
                                 connect_to_database.commit()
-                                
+                            elif len(fetch_results) == 1 and c.find(computer) == -1:
+                                finalcomputers = c+","+computer
+                                connect_to_database.execute("update results set macs=? where port=?", finalcomputers, port)
+                                connect_to_database.commit()
+                        vlan_number = []
+                        vlan_name = []
+                        vlans = session.walk(oids['vlans'])
+                        index_of_vlan = session.walk(oids['dot1qVlanStaticName'])
+                        vlan_values = []
+                        vlan_oids = []
+                        for index, vlan in zip(index_of_vlan, vlans):
+                            vlan_value = ':'.join('{:02x}'.format(ord(x)) for x in vlan.value)
+                            vlan_values = vlan_value.split(':')
+                            vlan_oids.append(vlan.oid)
+                            vname = index.value
+                            vnums = vlan.oid.split('.')
                             
-                    except:
-                        
+                            
+                                 
                             
                              
                         
