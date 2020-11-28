@@ -34,6 +34,31 @@ def main():
 							'dot1qVlanStaticUntaggedPorts':'1.3.6.1.2.1.17.7.1.4.3.1.4'
        						}
                     try:
+                        session = Session(hostname=ip, remote_port=port, version=2, community=community)
+                    except Exception as error:
+                        print(error)
+                        failed = connect_to_database.execute("select failed_attempts from networkdevices where ip=?, port=?", ip, port)
+                        failed += 1
+                        connect_to_database.execute("update switches set failed_attempts=? where (ip=? and port=?)", (failed, ip, port))
+                        connect_to_database.commit()
+                    request_time = str(datetime.fromtimestamp(int(time.time())))
+                    try:
+                        systems = session.walk(oids['dot1dTpFdbEntryAddress'])
+                        ports = session.walk(oids['dot1dTpFdbEntryPort'])
+                        for s, p in zip(systems, ports):
+                            oid = s.oid; oid_index = s.oid_index; type_of_snmp = s.snmp_type
+                            system = ':'.join('{:02x}'.format(ord(a)) for a in s.value)
+                            port = p.value
+                            results = connect_to_database.execute("select * from results where port=? and ip=?", port, ip)
+                            fetch_results = results.fetchall()
+                            for connected_systems in fetch_results:
+                                s = connected_systems[3]
+                            if fetch_results
+                            
+                    except:
+                        
+                            
+                             
                         
 									
                     
