@@ -69,7 +69,7 @@ def probe_device(ip, port, community, version, connection_to_database):
             
             combine = ''
             if vname != VL:
-                print(vname)
+               # print(vname)
                 for i in range(len(values)):
                     hexlist = values
                     mac_hex = hexlist[i]
