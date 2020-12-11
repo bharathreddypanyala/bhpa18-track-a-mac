@@ -84,7 +84,7 @@ def probe_device(ip, port, community, version, connection_to_database):
             
             combine = ''
             if vname != VL:
-                print(vname)
+            #    print(vname)
                 for i in range(len(values)):
                     hexlist = values
                     mac_hex = hexlist[i]
@@ -101,7 +101,7 @@ def probe_device(ip, port, community, version, connection_to_database):
                     
         for i in range(len(vlansnum)):
             portlan = '1'
-            print(vlanname)
+           # print(vlanname)
             connection_to_database.execute("update results set VLANS = ? where port=?", (vlanname[i],vlansnum[i]))
             connection_to_database.commit()
     except Exception as e:
