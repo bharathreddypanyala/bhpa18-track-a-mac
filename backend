@@ -65,7 +65,7 @@ def probe_device(ip, port, community, version, connection_to_database):
                 connection_to_database.commit()
             elif len(fetch_data)==1 and m.find(mac)==-1:
                 finalmac = m+","+mac
-                connection_to_database.execute("UPDATE results set MACS=? where port=?",(finalmac,portval))
+                connection_to_database.execute("UPDATE results set MACS=? where PORT=?",(finalmac,portval))
                 connection_to_database.commit()
         vlansnum = []
         vlanname = []
@@ -101,15 +101,15 @@ def probe_device(ip, port, community, version, connection_to_database):
                     
         for i in range(len(vlansnum)):
             portlan = '1'
-           # print(vlanname)
-            connection_to_database.execute("update results set VLANS = ? where port=?", (vlanname[i],vlansnum[i]))
+          #  print(vlanname)
+            connection_to_database.execute("update results set VLANS = ? where PORT=?", (vlanname[i],vlansnum[i]))
             connection_to_database.commit()
     except Exception as e:
         print(str(e)+' '+str(ip)+":"+str(port))
     finish = str(datetime.fromtimestamp(int(time.time())))
    # print("finished at " + finish)
 
-    connection_to_database.execute("update networkdevices set FIRST_PROBE=?, LATEST_PROBE=? where (ip=? and port=?)",(start, finish, ip, port))
+    connection_to_database.execute("update networkdevices set FIRST_PROBE=?, LATEST_PROBE=? where (IP=? and PORT=?)",(start, finish, ip, port))
     connection_to_database.commit()
 
 if  __name__=='__main__':
