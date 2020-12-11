@@ -27,12 +27,12 @@ def  create_database_connection(db_file):
         print(e)
     finally:
         if connection_to_database:
-            print("Connection success!")
+        #    print("Connection success!")
             attributes = connection_to_database.execute('Select * from networkdevices')
             for attribute in attributes:
                 ip = attribute[0]; port=int(attribute[1]); community=attribute[2]; version=int(attribute[3])
                 probe_device(ip, port, community,version, connection_to_database)
-                print("probe success!")
+         #       print("probe success!")
 
             connection_to_database.close()
             
@@ -47,7 +47,7 @@ def probe_device(ip, port, community, version, connection_to_database):
         connection_to_database.execute("update networkdevics set failed_attempts=? where (IP? and PORT=?)",(failed,ip,port))
         connection_to_database.commit()
     start = str(datetime.fromtimestamp(int(time.time())))
-
+   # print("started at " + start)
     try:
         macs = session.walk(oids['dot1dTpFdbEntryAddress'])
         ports = session.walk(oids['dot1dTpFdbEntryPort'])
@@ -107,9 +107,9 @@ def probe_device(ip, port, community, version, connection_to_database):
     except Exception as e:
         print(str(e)+' '+str(ip)+":"+str(port))
     finish = str(datetime.fromtimestamp(int(time.time())))
-    print(finish)
+   # print("finished at " + finish)
 
-    connection_to_database.execute("update networkdevics set FIRST_PROBE=?, LATEST_PROBE=? where (ip=? and port=?)",(start, finish, ip, port))
+    connection_to_database.execute("update networkdevices set FIRST_PROBE=?, LATEST_PROBE=? where (ip=? and port=?)",(start, finish, ip, port))
     connection_to_database.commit()
 
 if  __name__=='__main__':
