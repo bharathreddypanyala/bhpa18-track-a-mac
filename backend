@@ -1,86 +1,115 @@
 #!/usr/bin/env python3
+
+
 import time
 from datetime import datetime
 import sqlite3
 from easysnmp import Session
+from sqlite3 import Error
 
-
-
-def main():
-    while True:
-        connect_to_database = None
-        try:
-            connect_to_database = sqlite3.connect('track-a-mac.db') # create or open track-a-mac database
-            print("connected to database!")
+VL = 'DEFAULT_VLAN'
+   
+oids = {'dot1dTpFdbEntryAddress':'1.3.6.1.2.1.17.4.3.1.1',
+            'dot1dTpFdbEntryPort':'1.3.6.1.2.1.17.4.3.1.2',
+            'dot1qTpFdbEntryStatus':'1.3.6.1.2.1.17.4.3.1.3',
+            'dot1qTpFdbAddress':'1.3.6.1.2.17.7.1.2.2.1.1',
+            'dot1qTpFdbPort':'1.3.6.1.2.1.17.7.1.2.2.1.2',
+            'dot1qTpFdbStatus':'1.3.6.1.2.1.17.7.1.2.2.1.3',
+            'dot1qVlanStaticName':'1.3.6.1.2.1.17.7.1.4.3.1.1',
+            'sysDescr':'1.1.3.6.1.2.1.1.1',
+            'dot1dBasePortIfIndex':'1.3.6.1.2.1.17.1.4.1.2',
+            'vlans':'1.3.6.1.2.1.17.7.1.4.3.1.4'} 
             
-            connect_to_database.close()     
-        except sqlite3.Error as error:
-            print(error)
+def probe_device(ip, port, community, version, connection_to_database):
+    
+    try:
+        session = Session(hostname=ip, remote_port=port, version=version, community=community)
+    except Exception as e:
+        print(e)
+        failed = connection_to_database.execute("select FAILED_ATTEMPTS from networkdevices where IP=?, PORT=?",(ip,port))
+        failed += 1
+        connection_to_database.execute("update networkdevices set FAILED_ATTEMPTS=? where (IP=? and PORT=?)",(failed,ip,port))
+        connection_to_database.commit()
+    request_time = str(datetime.fromtimestamp(int(time.time())))
+  #  print(request_time)
+    try:
+        macs = session.walk(oids['dot1dTpFdbEntryAddress'])
+        ports = session.walk(oids['dot1dTpFdbEntryPort'])
+        for m,p in zip(macs, ports):
+            oid = m.oid;oid_index = m.oid_index;snmp_type=m.snmp_type
+            mac = ':'.join('{:02x}'.format(ord(a)) for a in m.value)
+            port_value = p.value
+          #  print(ip,mac,port_value)
+            attributes = connection_to_database.execute("SELECT * from results where (IP=? and PORT=?)",(ip, port_value))
+            fetch_all_attributes = attributes.fetchall()
+            for connected_macs in fetch_all_attributes:
+                m = connected_macs[3]
+            if len(fetch_all_attributes)==0:
+           #     print(ip,mac,port_value)
+                connection_to_database.execute('''INSERT INTO results(IP, VLANS, PORT, MACS) values (?,?,?,?)''',(ip,VL,port_value,mac))
+                connection_to_database.commit()
+            elif len(fetch_all_attributes)==1 and m.find(mac)==-1:
+                finalmac = m+","+mac
+                connection_to_database.execute("UPDATE results set MACS=? where port=?",(finalmac,port_value))
+                connection_to_database.commit()
+        vlansnum = []
+        vlanname = []
+        vlans = session.walk(oids['vlans'])
+        vlanindex = session.walk(oids['dot1qVlanStaticName'])
+        values = []
+        vlan_oids = []
+        for index, vlan in zip(vlanindex, vlans):
+            value = ':'.join('{:02x}'.format(ord(x)) for x in vlan.value)
+            values = value.split(':')
+            oid = vlan.oid
+            vlan_oids.append(oid)
+            vname = index.value
+            vnums = oid.split('.')
+            vnum = str(vnums[-1])
             
-        finally:
-            if connect_to_database:
-                switches = connect_to_database.execute("select * from networkdevices")
-                for switch in switches:
-                    ip = switch[0]; port= switch[1]; community = switch[2]; version = int(switch[3])
-                    oids = {'dot1dTpFdbEntryAddress':'1.3.6.1.2.1.17.4.3.1.1',
-							'dot1dTpFdbEntryPort':'1.3.6.1.2.1.17.4.3.1.2',
-							'dot1qTpFdbEntryStatus':'1.3.6.1.2.1.17.4.3.1.3',
-							'dot1qTpFdbAddress':'1.3.6.1.2.17.7.1.2.2.1.1',
-							'dot1qTpFdbPort':'1.3.6.1.2.1.17.7.1.2.2.1.2',
-							'dot1qTpFdbStatus':'1.3.6.1.2.1.17.7.1.2.2.1.3',
-							'dot1qVlanStaticName':'1.3.6.1.2.1.17.7.1.4.3.1.1',
-							'sysDescr':'1.1.3.6.1.2.1.1.1',
-							'dot1dBasePortIfIndex':'1.3.6.1.2.1.17.1.4.1.2',
-							'dot1qVlanStaticUntaggedPorts':'1.3.6.1.2.1.17.7.1.4.3.1.4'
-       						}
-                    try:
-                        session = Session(hostname=ip, remote_port=port, version=2, community=community)
-                    except Exception as error:
-                        print(error)
-                        failed = connect_to_database.execute("select failed_attempts from networkdevices where ip=?, port=?", ip, port)
-                        failed += 1
-                        connect_to_database.execute("update switches set failed_attempts=? where (ip=? and port=?)", (failed, ip, port))
-                        connect_to_database.commit()
-                    request_time = str(datetime.fromtimestamp(int(time.time())))
-                    try:
-                        computers = session.walk(oids['dot1dTpFdbEntryAddress'])
-                        ports = session.walk(oids['dot1dTpFdbEntryPort'])
-                        for c, p in zip(computers, ports):
-                            oid = c.oid; oid_index = c.oid_index; type_of_snmp = c.snmp_type
-                            computer = ':'.join('{:02x}'.format(ord(a)) for a in c.value)
-                            port = p.value
-                            results = connect_to_database.execute("select * from results where port=? and ip=?", port, ip)
-                            fetch_results = results.fetchall()
-                            for connected_computers in fetch_results:
-                                c = connected_computers[3]
-                            if len(fetch_results) == 0:
-                                print(ip, port, computer)
-                                connect_to_database.execute("insert into results(ip=?, port=?, macs=?", ip, port, computer)
-                                connect_to_database.commit()
-                            elif len(fetch_results) == 1 and c.find(computer) == -1:
-                                finalcomputers = c+","+computer
-                                connect_to_database.execute("update results set macs=? where port=?", finalcomputers, port)
-                                connect_to_database.commit()
-                        vlan_number = []
-                        vlan_name = []
-                        vlans = session.walk(oids['vlans'])
-                        index_of_vlan = session.walk(oids['dot1qVlanStaticName'])
-                        vlan_values = []
-                        vlan_oids = []
-                        for index, vlan in zip(index_of_vlan, vlans):
-                            vlan_value = ':'.join('{:02x}'.format(ord(x)) for x in vlan.value)
-                            vlan_values = vlan_value.split(':')
-                            vlan_oids.append(vlan.oid)
-                            vname = index.value
-                            vnums = vlan.oid.split('.')
-                            
-                            
-                                 
-                            
-                             
-                        
-									
+            combine = ''
+            if vname != VL:
+                print(vname)
+                for i in range(len(values)):
+                    hexlist = values
+                    mac_hex = hexlist[i]
+                    scale = 16
+                    no_of_bits = 8
+                    orghex = bin(int(mac_hex, scale))[2:].zfill(no_of_bits)
+                    combine = combine + str(orghex)
+                    orghex = ''
+                    listvls = list(combine)
+                for i in range(len(listvls)):
+                    num = i + 1
+                    vlanname.append(str(vname))
+                    vlansnum.append(num)
                     
-       
-if __name__ == '__main__':
-    main()
+        for i in range(len(vlansnum)):
+            portlan = '1'
+            print(vlanname)
+            connection_to_database.execute("update results set VLANS = ? where PORT=?", (vlanname[i],vlansnum[i]))
+            connection_to_database.commit()
+    except Exception as e:
+        print(str(e)+' '+str(ip)+":"+str(port))
+    finished_time = str(datetime.fromtimestamp(int(time.time())))
+  #  print(finished_time)
+   # print('ok!')
+    connection_to_database.execute("update networkdevices set FIRST_PROBE=?, LATEST_PROBE=? where (IP=? and PORT=?)",(request_time, finished_time, ip, port))
+    connection_to_database.commit()
+  #  print("Db updated!")
+if  __name__=='__main__':
+    while True:
+        connection_to_database = None
+        try:
+            connection_to_database = sqlite3.connect("track-a-mac.db")
+        except Error as e:
+            print(e)
+        finally:
+            if connection_to_database:
+                attributes = connection_to_database.execute('Select * from networkdevices')
+                for attribute in attributes:
+                    ip = attribute[0]; port=int(attribute[1]); community=attribute[2]; version=int(attribute[3])
+                    probe_device(ip, port, community,version, connection_to_database)
+                connection_to_database.close()
+
+        time.sleep(60)
