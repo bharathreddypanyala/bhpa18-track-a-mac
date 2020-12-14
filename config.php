@@ -7,7 +7,7 @@ class track_a_mac_db extends SQLite3 {
 $db = new track_a_mac_db();
 
 
-$result = $db->exec('CREATE TABLE IF NOT EXISTS results(IP varchar not null, VLANs varchar not null, PORT varchar, MACS varchar)');
+$result = $db->exec('CREATE TABLE IF NOT EXISTS results(IP varchar not null, VLANS varchar not null, PORT varchar, MACS varchar)');
 if(!$result){
    echo $db->lastErrorMsg(); 
 }

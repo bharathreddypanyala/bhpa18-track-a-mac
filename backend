@@ -103,7 +103,7 @@ def probe_device(ip, port, community, version, connection_to_database):
             portlan = '1'
           #  print(vlanname)
             connection_to_database.execute("update results set VLANS = ? where PORT=?", (vlanname[i],vlansnum[i]))
-            print("updated vlan name" + vlanname[i])
+           # print("updated vlan name" + vlanname[i])
             connection_to_database.commit()
             time.sleep(0.005)
     except Exception as e:
