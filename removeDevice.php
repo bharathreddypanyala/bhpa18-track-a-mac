@@ -1,37 +1,24 @@
 <?php
-include('config.php');
 
-if (empty($_GET)){
-	echo "none";
+include_once('config.php');
+
+$ip = $_GET['ip'];
+$port = $_GET['port'];
+$community = $_GET['community'];
+$version = $_GET['version'];
+
+if(empty($ip) || empty($port)||empty($community) || empty($version)) {
+    echo "FALSE";
+}
+
+else {
+    $removeDevice = $db->exec("DELETE FROM networkdevices WHERE IP='$ip' AND PORT='$port'AND COMMUNITY='$community' AND VERSION='$version'");
+    if(!$removeDevice){
+        echo "FALSE";
     }
-else{
-
-	$ip = $_GET["ip"];
-	$port = $_GET['port'];
-	$community = $_GET['community'];
-	$version = $_GET['version'];
-
-	
-	$check = $db->query("SELECT * FROM info WHERE IP='$ip'");
-	while($i = $check->fetchArray(SQLITE3_ASSOC)){
-		
-			
-		if ($i['IP'] != $ip) {
-			echo 'No IP Found';
-		}
-		else{
-			$sql1 =<<<EOF
-			DELETE FROM info WHERE IP = '$ip';
-EOF;
-			$run1 = $db->exec($sql1);
-			
-			if(!$run1){
-				echo "failed to remove";
-			}
-			else{
-				echo "OK removed successfully";
-			}		}
-	}
+    else {
+        echo "OK";
+    }
 
 }
 
