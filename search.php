@@ -1,37 +1,36 @@
 <?php
+
 include_once('config.php');
 
 if (empty($_GET)) {
-    echo "False and database not created";
+    echo "FALSE";
     }
 else {
-    $my_search_is = htmlspecialchars($_GET["mac"]);
+    $mac_addr = htmlspecialchars($_GET["mac"]);
     $sql = <<<EOF
-              SELECT * FROM List WHERE MACS LIKE "%$my_search_is%" ORDER BY MACS;
+              SELECT * FROM results WHERE macs LIKE "%$mac_addr%" ORDER BY MACS;
 EOF;
-    $my_output_is = $db->query($sql);
-    $data = array(); 
-    while($row = $my_output_is->fetchArray(SQLITE3_ASSOC) ){
-         #echo $of rows
-         $data[] = $row['IP']. " | " . $row['VLANs'] . " | " . $row['PORT'] . " | " . "$my_search_is";
+    $find = $db->query($sql);
+    $arr = array(); 
+    while($row = $find->fetchArray(SQLITE3_ASSOC) ){
+         #echo $row[1]. "|" . $row[2] . "|" . $row[3] . "|" . $row[4] . "\n";
+         $arr[] = $row['IP']. " | " . $row['VLANS'] . " | " . $row['PORT'] . " | " . "$mac_addr";
      
     }
 
-$flag = count($data);
-if($flag ==0){
-    $count = $db->query('SELECT count(*) FROM info');
-    while($check = $count->fetchArray(SQLITE3_ASSOC)) {
-        $number_of_devices = $check['count(*)'];
-        echo "No match in $number_of_devices devices"."\n";
+$totnum = count($arr);
+if ($totnum ==0){
+    $count = $db->query('SELECT count(*) FROM networkdevices');
+    while($row1 = $count->fetchArray(SQLITE3_ASSOC)) {
+        $noDevices = $row1['count(*)'];
+        echo "Not Found in $noDevices devices"."\n";
      }
 }
 
-$my_result_is = array_unique($data);
-$total = count($my_result_is);
-$i=0;
-while($i<$total){
-    echo $my_result_is[$i]. "\n";
-    $i++;
+$res = array_unique($arr);
+$len = count($res);
+for($i = 0; $i < $len; $i++){
+    echo $res[$i]. "\n";
     }
 }
 $db->close();
